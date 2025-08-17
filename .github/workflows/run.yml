@@ -1,0 +1,37 @@
+name: yt-idea-agent
+
+on:
+  workflow_dispatch: {}
+
+jobs:
+  run:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install deps
+        run: |
+          python -m pip install -U pip
+          pip install -r requirements.txt
+          sudo apt-get update
+          sudo apt-get install -y ffmpeg
+
+      - name: Run agent
+        env:
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          YOUTUBE_API_KEY: ${{ secrets.YOUTUBE_API_KEY }}
+          CHANNEL_ID: ${{ secrets.CHANNEL_ID }}
+          MAX_VIDEOS: ${{ secrets.MAX_VIDEOS }}
+        run: |
+          python -m src.yt_agent.run
+
+      - name: Upload outputs
+        uses: actions/upload-artifact@v4
+        with:
+          name: yt-ideas-and-script
+          path: outputs/
